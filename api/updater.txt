@@ -1,27 +1,21 @@
-# updater.py
-import os
-import ssl
+import urllib.request
 import platform
 import requests
-import urllib.request
+import json
+import time
+import ssl
+import os
 
-# allow everything in C:/ to remove and rename and create files
-os.chmod('C:/', 0o777)
+desktop_path = ''; useros = ''
+folder_path = ''
 
-# rename main.exe to old_main.exe (in this folder)
-os.rename('main.exe', 'old_main.exe')
-
-# get latest version
 version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
 
-# download latest version
+input("\nPRESS ENTER TO START UPDATE TO VERSION " + version)
+
 url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{version}-distributable.exe'
 file_name = 'main.exe'
 
-# Disable SSL verification
-context = ssl._create_unverified_context()
-
-# check if user is using windows or linux or macOS or something else
 if platform.system() == 'Windows':
     useros = 'win'
 elif platform.system() == 'Linux':
@@ -29,18 +23,23 @@ elif platform.system() == 'Linux':
 else:
     useros = 'unknown'
 
+# Check if the user is using windows or linux or macOS or something else
 if useros == 'win':
-    folder_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop', 'zb-bot-2')
+    desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 elif useros == 'linux':
-    folder_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop', 'zb-bot-2')
+    desktop_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+
+# Update folder_path
+folder_path = os.path.join(desktop_path, 'zb-bot-2')
+
+# Disable SSL verification
+context = ssl._create_unverified_context()
 
 # Download the file and write it to disk
+print("Collecting...")
 with urllib.request.urlopen(url, context=context) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
     data = response.read()
     out_file.write(data)
 
-# remove old_main.exe
-os.remove('old_main.exe')
-
-# run main.exe
-os.system('main.exe')
+print("\nUpdate successful! Please run the program again.")
+time.sleep(3)
