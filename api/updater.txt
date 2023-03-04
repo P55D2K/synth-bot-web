@@ -1,35 +1,30 @@
 import urllib.request
-import requests
+import subprocess
+import json
 import time
-import ssl
 import os
 
-print("Updating program...")
+print("Removing previous version...")
+# Delete old main.exe
+os.remove("main.exe")
 
-# Get the latest version of the program
-latest_version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
-url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{latest_version}-distributable.exe'
+print("Getting latest version...")
+url = "https://zb-bot-2.vercel.app/api/data.json"
+with urllib.request.urlopen(url) as response:
+    data = json.loads(response.read())
+    latest_version = data["bot_version"]
 
-# Current path to folder
+print("Downloading latest version...")
+# Download new main.exe
+url = f"https://zb-bot-2.vercel.app/api/zb-bot-2-{latest_version}-distributable.exe"
+file_name = "main.exe"
 folder_path = os.path.dirname(os.path.abspath(__file__))
-file_name = 'main.exe'
-
-# Disable SSL verification
-context = ssl._create_unverified_context()
-
-# Download the latest version of the program
-with urllib.request.urlopen(url, context=context) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
+with urllib.request.urlopen(url) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
     data = response.read()
     out_file.write(data)
 
-print("Update successful! Program will now restart...")
-time.sleep(1)
-
-# Run the program
-os.system(f'start {os.path.join(folder_path, file_name)}')
-
-# Get the absolute path of the current running file
-current_file = os.path.abspath(__file__)
-
-# Delete the current running file
-os.remove(current_file)
+print("Update complete!")
+time.sleep(2)
+print("Starting latest version...")
+# Call new main.exe
+subprocess.run(["python", "main.py"], shell=True)
