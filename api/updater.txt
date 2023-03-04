@@ -1,13 +1,16 @@
 import os
-import sys
+import requests
 import urllib.request
 
-# Get the latest version number from the command line arguments
-latest_version = sys.argv[1]
+# Get the latest version number from data.json
+latest_version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
 
 # Download the latest version of main.exe
 url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{latest_version}-distributable.exe'
-folder_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+
+# Get the path of the current folder
+folder_path = os.path.dirname(os.path.realpath(__file__))
+
 file_name = 'new_main.exe'
 with urllib.request.urlopen(url) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
     out_file.write(response.read())
