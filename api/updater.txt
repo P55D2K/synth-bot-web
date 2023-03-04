@@ -1,0 +1,35 @@
+import urllib.request
+import requests
+import time
+import ssl
+import os
+
+print("Updating program...")
+
+# Get the latest version of the program
+latest_version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
+url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{latest_version}-distributable.exe'
+
+# Current path to folder
+folder_path = os.path.dirname(os.path.abspath(__file__))
+file_name = 'main.exe'
+
+# Disable SSL verification
+context = ssl._create_unverified_context()
+
+# Download the latest version of the program
+with urllib.request.urlopen(url, context=context) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
+    data = response.read()
+    out_file.write(data)
+
+print("Update successful! Program will now restart...")
+time.sleep(1)
+
+# Run the program
+os.system(f'start {os.path.join(folder_path, file_name)}')
+
+# Get the absolute path of the current running file
+current_file = os.path.abspath(__file__)
+
+# Delete the current running file
+os.remove(current_file)
