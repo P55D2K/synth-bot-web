@@ -1,30 +1,24 @@
-import urllib.request
-import subprocess
-import json
-import time
 import os
+import sys
+import urllib.request
 
-print("Removing previous version...")
-# Delete old main.exe
-os.remove("main.exe")
+# Get the latest version number from the command line arguments
+latest_version = sys.argv[1]
 
-print("Getting latest version...")
-url = "https://zb-bot-2.vercel.app/api/data.json"
-with urllib.request.urlopen(url) as response:
-    data = json.loads(response.read())
-    latest_version = data["bot_version"]
-
-print("Downloading latest version...")
-# Download new main.exe
-url = f"https://zb-bot-2.vercel.app/api/zb-bot-2-{latest_version}-distributable.exe"
-file_name = "main.exe"
-folder_path = os.path.dirname(os.path.abspath(__file__))
+# Download the latest version of main.exe
+url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{latest_version}-distributable.exe'
+folder_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+file_name = 'new_main.exe'
 with urllib.request.urlopen(url) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
-    data = response.read()
-    out_file.write(data)
+    out_file.write(response.read())
 
-print("Update complete!")
-time.sleep(2)
-print("Starting latest version...")
-# Call new main.exe
-subprocess.run(["python", "main.py"], shell=True)
+# Rename the old main.exe to a temporary name
+old_file_name = 'main.exe'
+new_file_name = 'old_main.exe'
+os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+
+# Rename the downloaded file to main.exe
+os.rename(os.path.join(folder_path, file_name), os.path.join(folder_path, old_file_name))
+
+# Start the new version of the application
+os.system(os.path.join(folder_path, old_file_name))
