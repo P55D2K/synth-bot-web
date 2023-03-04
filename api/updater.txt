@@ -1,27 +1,46 @@
+# updater.py
 import os
+import ssl
+import platform
 import requests
 import urllib.request
 
-# Get the latest version number from data.json
-latest_version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
+# allow everything in C:/ to remove and rename and create files
+os.chmod('C:/', 0o777)
 
-# Download the latest version of main.exe
-url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{latest_version}-distributable.exe'
+# rename main.exe to old_main.exe (in this folder)
+os.rename('main.exe', 'old_main.exe')
 
-# Get the path of the current folder
-folder_path = os.path.dirname(os.path.realpath(__file__))
+# get latest version
+version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
 
-file_name = 'new_main.exe'
-with urllib.request.urlopen(url) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
-    out_file.write(response.read())
+# download latest version
+url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{version}-distributable.exe'
+file_name = 'main.exe'
 
-# Rename the old main.exe to a temporary name
-old_file_name = 'main.exe'
-new_file_name = 'old_main.exe'
-os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+# Disable SSL verification
+context = ssl._create_unverified_context()
 
-# Rename the downloaded file to main.exe
-os.rename(os.path.join(folder_path, file_name), os.path.join(folder_path, old_file_name))
+# check if user is using windows or linux or macOS or something else
+if platform.system() == 'Windows':
+    useros = 'win'
+elif platform.system() == 'Linux':
+    useros = 'linux'
+else:
+    useros = 'unknown'
 
-# Start the new version of the application
-os.system(os.path.join(folder_path, old_file_name))
+if useros == 'win':
+    folder_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop', 'zb-bot-2')
+elif useros == 'linux':
+    folder_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop', 'zb-bot-2')
+
+# Download the file and write it to disk
+with urllib.request.urlopen(url, context=context) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
+    data = response.read()
+    out_file.write(data)
+
+# remove old_main.exe
+os.remove('old_main.exe')
+
+# run main.exe
+os.system('main.exe')
