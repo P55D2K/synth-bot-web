@@ -10,36 +10,44 @@ desktop_path = ''; useros = ''
 folder_path = ''
 
 version = requests.get('https://zb-bot-2.vercel.app/api/data.json').json()['bot_version']
-
-input("\nPRESS ENTER TO START UPDATE TO VERSION " + version)
-
 url = f'https://zb-bot-2.vercel.app/api/bot_version/zb-bot-2-{version}-distributable.exe'
 file_name = 'main.exe'
 
-if platform.system() == 'Windows':
-    useros = 'win'
-elif platform.system() == 'Linux':
-    useros = 'linux'
-else:
-    useros = 'unknown'
+def _update():
+    input("\nPRESS ENTER TO START UPDATE TO VERSION " + version)
 
-# Check if the user is using windows or linux or macOS or something else
-if useros == 'win':
-    desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-elif useros == 'linux':
-    desktop_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+    if platform.system() == 'Windows':
+        useros = 'win'
+    elif platform.system() == 'Linux':
+        useros = 'linux'
+    else:
+        useros = 'unknown'
 
-# Update folder_path
-folder_path = os.path.join(desktop_path, 'zb-bot-2')
+    # Check if the user is using windows or linux or macOS or something else
+    if useros == 'win':
+        desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    elif useros == 'linux':
+        desktop_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
 
-# Disable SSL verification
-context = ssl._create_unverified_context()
+    # Update folder_path
+    folder_path = os.path.join(desktop_path, 'zb-bot-2')
 
-# Download the file and write it to disk
-print("Collecting...")
-with urllib.request.urlopen(url, context=context) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
-    data = response.read()
-    out_file.write(data)
+    # Disable SSL verification
+    context = ssl._create_unverified_context()
 
-print("\nUpdate successful! Please run the program again.")
-time.sleep(3)
+    # Download the file and write it to disk
+    print("Collecting...")
+    with urllib.request.urlopen(url, context=context) as response, open(os.path.join(folder_path, file_name), 'wb') as out_file:
+        data = response.read()
+        out_file.write(data)
+
+    # Update data/settings.json to reflect the new version
+    print("Updating settings...")
+    with open(os.path.join(folder_path, 'data/settings.json'), 'r') as f:
+        data = json.load(f)
+        data['bot_version'] = version
+    with open(os.path.join(folder_path, 'data/settings.json'), 'w') as f:
+        json.dump(data, f)
+
+    print("\nUpdate successful!")
+    time.sleep(3)
