@@ -1,4 +1,4 @@
-# zb-bot-2-website
+# synth-bot-website
 
-ZB Bot 2 Website
-Website: [https://zb-bot-2.vercel.app/](https://zb-bot-2.vercel.app/).
+Synth Bot Website
+Website: [https://synth-bot.vercel.app/](https://synth-bot.vercel.app/).
